@@ -1,8 +1,9 @@
-import sys
-import Block
+from Maze import *
 
 def main():
-	print(sys.argv[1])
-
+	size = 10
+	maze = Maze(size)
+	print(maze.asciiForm)
+	
 if __name__ == "__main__":
 	main()
