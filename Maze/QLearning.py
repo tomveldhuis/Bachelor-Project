@@ -10,7 +10,7 @@ def reward(size, x, y):
 
 # Returns the possible actions-Q-value pairs for a given state
 def possibleActions(maze, x, y):
-	actions = maze.grid[y][x].values.copy()
+	actions = maze.QValues[y][x].copy()
 	for side, walled in maze.grid[y][x].walls.items():
 		if walled:
 			actions.pop(side)
@@ -51,20 +51,21 @@ def updateQValue(maze, x, y, alpha, gamma, nextAction):
 	optimalFutureAction = maxAction(maze, futureX, futureY, possibleActions(maze, futureX, futureY))
 	# Determine TD (temporal difference) value
 	TD = reward(maze.size, x, y)
-	TD += gamma * maze.grid[futureY][futureX].values[optimalFutureAction]
-	TD -= maze.grid[y][x].values[nextAction]
+	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
+	TD -= maze.QValues[y][x][nextAction]
 	# Update current Q-value
-	maze.grid[y][x].values[nextAction] += alpha * TD
+	maze.QValues[y][x][nextAction] += alpha * TD
 
 # Prints the Q-table
 def printQTable(maze):
+	sys.stdout.write("\tnorth\teast\tsouth\twest\n");
 	for y in range(maze.size):
 		for x in range(maze.size):
 			sys.stdout.write("(%i, %i)\t" % (x, y))
-			sys.stdout.write("%.2f\t" % maze.grid[y][x].values["north"])
-			sys.stdout.write("%.2f\t" % maze.grid[y][x].values["east"])
-			sys.stdout.write("%.2f\t" % maze.grid[y][x].values["south"])
-			sys.stdout.write("%.2f\n" % maze.grid[y][x].values["west"])
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["north"])
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["east"])
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["south"])
+			sys.stdout.write("%.2f\n" % maze.QValues[y][x]["west"])
 
 # Q-learning algorithm
 def QLearning(maze):
@@ -73,13 +74,13 @@ def QLearning(maze):
 	alpha = 0.1
 	gamma = 0.9
 	epsilon = 0.25
+	finalEpoch = 100000
 	
 	# Starting point
 	x = 0
 	y = 0
 	
 	count = 0
-	finalEpoch = 100000
 	goalReached = False
 	while True:
 		count += 1
@@ -91,10 +92,7 @@ def QLearning(maze):
 			sys.stdout.write("\nGoal state reached\n")
 		# Learning takes too long
 		if count == finalEpoch:
-			if not goalReached:
-				sys.stdout.write(" (learning took too long)\n")
-			else:
-				sys.stdout.write("\n")
+			sys.stdout.write(" (final epoch reached)\n")
 			break
 		
 		# Determine the next action

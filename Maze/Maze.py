@@ -5,7 +5,8 @@ class Maze:
 	def __init__(self, size, initValue):
 		self.size = int(size)
 		self.asciiForm = self.makeRandomMaze(self.size, self.size)
-		self.grid = self.convertToGrid(self.asciiForm, initValue)
+		self.grid = self.convertToGrid(self.asciiForm)
+		self.QValues = self.initQValues(initValue)
 	
 	# Generates a random ASCII maze
 	def makeRandomMaze(self, w, h):
@@ -33,7 +34,7 @@ class Maze:
 		return s[:-2]
 	
 	# Converts an ASCII maze to a grid with cells
-	def convertToGrid(self, asciiForm, initValue):
+	def convertToGrid(self, asciiForm):
 		# Create a list
 		gridList = []
 		width = 2 * self.size + 1
@@ -60,6 +61,21 @@ class Maze:
 						west = False
 						if gridList[y][x-1] == "#":
 							west = True
-						line.append(Cell(initValue, north, east, south, west))
+						line.append(Cell(north, east, south, west))
 				grid.append(line)
 		return grid
+	
+	def initQValues(self, initValue):
+		dict = {
+		"north": float(initValue),
+		"east": float(initValue),
+		"south": float(initValue),
+		"west": float(initValue)
+		}
+		QValues = []
+		for y in range(self.size):
+			line = []
+			for x in range(self.size):
+				line.append(dict.copy())
+			QValues.append(line)
+		return QValues

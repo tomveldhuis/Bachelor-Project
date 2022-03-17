@@ -2,7 +2,7 @@ from Maze import *
 from QLearning import *
 
 def main():
-	size = 5
+	size = 3
 	initValue = 0
 	maze = Maze(size, initValue)
 	print(maze.asciiForm)
