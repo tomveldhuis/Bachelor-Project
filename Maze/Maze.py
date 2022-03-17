@@ -2,10 +2,10 @@ from Cell import *
 from random import shuffle, randrange
 
 class Maze:
-	def __init__(self, size):
+	def __init__(self, size, initValue):
 		self.size = int(size)
 		self.asciiForm = self.makeRandomMaze(self.size, self.size)
-		self.grid = self.convertToGrid(self.asciiForm)
+		self.grid = self.convertToGrid(self.asciiForm, initValue)
 	
 	# Generates a random ASCII maze
 	def makeRandomMaze(self, w, h):
@@ -33,7 +33,7 @@ class Maze:
 		return s[:-2]
 	
 	# Converts an ASCII maze to a grid with cells
-	def convertToGrid(self, asciiForm):
+	def convertToGrid(self, asciiForm, initValue):
 		# Create a list
 		gridList = []
 		width = 2 * self.size + 1
@@ -60,6 +60,6 @@ class Maze:
 						west = False
 						if gridList[y][x-1] == "#":
 							west = True
-						line.append(Cell(north, east, south, west))
+						line.append(Cell(initValue, north, east, south, west))
 				grid.append(line)
 		return grid
