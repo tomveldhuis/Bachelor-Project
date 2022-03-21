@@ -1,12 +1,5 @@
 import sys
-from Maze import *
-from random import random, choice
-
-# Returns the reward from a given state
-def reward(size, x, y):
-	if x == size - 1 and y == size - 1:
-		return 100
-	return 100 / (abs(x - size - 1) + abs(y - size - 1))
+from QLearning_Meta import *
 
 # Returns the possible actions-Q-value pairs for a given state
 def possibleActions(maze, x, y):
@@ -15,24 +8,6 @@ def possibleActions(maze, x, y):
 		if walled:
 			actions.pop(side)
 	return actions
-
-# Returns the action with the maximum Q-value for a given state
-# and a given list of actions
-def maxAction(maze, x, y, actions):
-	maxValue = max([value for side, value in actions.items()])
-	maxActions = [side for side, value in actions.items() if value == maxValue]
-	if len(maxActions) > 1:
-		return choice(maxActions)
-	return maxActions[0]
-
-# Returns an action for a given state (epsilon-greedy strategy)
-def epsilonGreedy(maze, epsilon, x, y):
-	actions = possibleActions(maze, x, y)
-	# Exploitative action
-	if random() > epsilon:
-		return maxAction(maze, x, y, actions)
-	# Explorative action
-	return choice([side for side, value in actions.items()])
 
 # Updates a Q-value for a given state-action pair
 def updateQValue(maze, x, y, alpha, gamma, nextAction):
@@ -47,17 +22,21 @@ def updateQValue(maze, x, y, alpha, gamma, nextAction):
 		futureY += 1
 	if nextAction == "west":
 		futureX -= 1
+		
 	# Determine optimal action for future state
 	optimalFutureAction = maxAction(maze, futureX, futureY, possibleActions(maze, futureX, futureY))
+	
 	# Determine TD (temporal difference) value
 	TD = reward(maze.size, x, y)
 	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[y][x][nextAction]
+	
 	# Update current Q-value
 	maze.QValues[y][x][nextAction] += alpha * TD
 
 # Prints the Q-table
 def printQTable(maze):
+	sys.stdout.write("        ------------Q-values------------\n")
 	sys.stdout.write("\tnorth\teast\tsouth\twest\n");
 	for y in range(maze.size):
 		for x in range(maze.size):
@@ -70,18 +49,24 @@ def printQTable(maze):
 # Q-learning algorithm
 def QLearning(maze):
 	# Parameters
+	param = parameters()
 	size = maze.size
-	alpha = 0.1
-	gamma = 0.9
-	epsilon = 0.25
-	finalEpoch = 100000
+	alpha = param["alpha"]
+	gamma = param["gamma"]
+	epsilon = param["epsilon"]
+	initValue = param["initValue"]
+	finalEpoch = param["finalEpoch"]
 	
 	# Starting point
-	x = 0
-	y = 0
+	x = param["xStart"]
+	y = param["yStart"]
+	
+	# Initialize Q-values
+	maze.initQValues(initValue)
 	
 	count = 0
 	goalReached = False
+	sys.stdout.write("--------\nQ-learning\n--------\n")
 	while True:
 		count += 1
 		sys.stdout.write("\rState: %i" % count)
@@ -96,7 +81,7 @@ def QLearning(maze):
 			break
 		
 		# Determine the next action
-		nextAction = epsilonGreedy(maze, epsilon, x, y)
+		nextAction = epsilonGreedy(maze, epsilon, x, y, possibleActions(maze, x, y))
 		
 		# Update the Q-value for the current state-action pair
 		updateQValue(maze, x, y, alpha, gamma, nextAction)

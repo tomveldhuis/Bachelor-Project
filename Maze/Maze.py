@@ -2,11 +2,11 @@ from Cell import *
 from random import shuffle, randrange
 
 class Maze:
-	def __init__(self, size, initValue):
+	# Constructor
+	def __init__(self, size):
 		self.size = int(size)
 		self.asciiForm = self.makeRandomMaze(self.size, self.size)
 		self.grid = self.convertToGrid(self.asciiForm)
-		self.QValues = self.initQValues(initValue)
 	
 	# Generates a random ASCII maze
 	def makeRandomMaze(self, w, h):
@@ -65,7 +65,8 @@ class Maze:
 				grid.append(line)
 		return grid
 	
-	def initQValues(self, initValue):
+	# Creates a new grid of Q-values for the maze
+	def newQValues(self, initValue):
 		dict = {
 		"north": float(initValue),
 		"east": float(initValue),
@@ -79,3 +80,15 @@ class Maze:
 				line.append(dict.copy())
 			QValues.append(line)
 		return QValues
+	
+	# Initialize single Q-values for the maze
+	def initQValues(self, initValue):
+		self.QValues = self.newQValues(initValue)
+	
+	# Initialize double Q-values for the maze
+	def initDoubleQValues(self, initValue):
+		QValues = []
+		QValues.append(self.newQValues(initValue))
+		QValues.append(self.newQValues(initValue))
+		self.QValues = QValues
+		
