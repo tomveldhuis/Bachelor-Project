@@ -14,20 +14,20 @@ def updateQValue(maze, x, y, alpha, gamma, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
-	if nextAction == "north":
+	if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
 		futureY -= 1
-	if nextAction == "east":
+	if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
 		futureX += 1
-	if nextAction == "south":
+	if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
 		futureY += 1
-	if nextAction == "west":
+	if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
 		futureX -= 1
 		
 	# Determine optimal action for future state
-	optimalFutureAction = maxAction(maze, futureX, futureY, possibleActions(maze, futureX, futureY))
+	optimalFutureAction = maxAction(maze.QValues[futureY][futureX])
 	
 	# Determine TD (temporal difference) value
-	TD = reward(maze.size, x, y)
+	TD = reward(maze, x, y, nextAction)
 	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[y][x][nextAction]
 	
@@ -81,17 +81,17 @@ def QLearning(maze):
 			break
 		
 		# Determine the next action
-		nextAction = epsilonGreedy(maze, epsilon, x, y, possibleActions(maze, x, y))
+		nextAction = epsilonGreedy(epsilon, maze.QValues[y][x])
 		
 		# Update the Q-value for the current state-action pair
 		updateQValue(maze, x, y, alpha, gamma, nextAction)
 		
 		# Go to the next state
-		if nextAction == "north":
+		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
 			y -= 1
-		if nextAction == "east":
+		if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
 			x += 1
-		if nextAction == "south":
+		if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
 			y += 1
-		if nextAction == "west":
+		if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
 			x -= 1

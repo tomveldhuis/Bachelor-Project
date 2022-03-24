@@ -22,29 +22,38 @@ def possibleAverageActions(maze, x, y):
 			averageActions[side] = average
 	return averageActions
 	
+def averageActions(maze, x, y):
+	actionsA = maze.QValues[0][y][x]
+	actionsB = maze.QValues[1][y][x]
+	actions = {}
+	for side, walled in maze.grid[y][x].walls.items():
+		average = (actionsA[side] + actionsB[side]) / 2
+		actions[side] = average
+	return actions
+	
 # Updates a Q-value for a given state-action pair
 # (random choice between double Q-values)
 def updateDoubleQValue(maze, x, y, alpha, gamma, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
-	if nextAction == "north":
+	if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
 		futureY -= 1
-	if nextAction == "east":
+	if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
 		futureX += 1
-	if nextAction == "south":
+	if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
 		futureY += 1
-	if nextAction == "west":
+	if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
 		futureX -= 1
 	
 	# Determine which Q-value to change
 	choiceQ = choice([0, 1])
 	
 	# Determine optimal action for future state
-	optimalFutureAction = maxAction(maze, futureX, futureY, possibleActionsSelect(maze, futureX, futureY, choiceQ))
+	optimalFutureAction = maxAction(maze.QValues[choiceQ][futureY][futureX])
 	
 	# Determine TD (temporal difference) value
-	TD = reward(maze.size, x, y)
+	TD = reward(maze, x, y, nextAction)
 	TD += gamma * maze.QValues[1 - choiceQ][futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[choiceQ][y][x][nextAction]
 	
@@ -102,17 +111,17 @@ def DoubleQLearning(maze):
 			break
 		
 		# Determine the next action
-		nextAction = epsilonGreedy(maze, epsilon, x, y, possibleAverageActions(maze, x, y))
+		nextAction = epsilonGreedy(epsilon, averageActions(maze, x, y))
 		
 		# Update the Q-value for the current state-action pair
 		updateDoubleQValue(maze, x, y, alpha, gamma, nextAction)
 		
 		# Go to the next state
-		if nextAction == "north":
+		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
 			y -= 1
-		if nextAction == "east":
+		if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
 			x += 1
-		if nextAction == "south":
+		if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
 			y += 1
-		if nextAction == "west":
+		if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
 			x -= 1
