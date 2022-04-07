@@ -1,27 +1,57 @@
 import sys
 from QLearning_Meta import *
 
-# Returns the possible actions-Q-value pairs for a given state
-# (one of the two possible Q-values set)
-def possibleActionsSelect(maze, x, y, select):
-	actions = maze.QValues[select][y][x].copy()
-	for side, walled in maze.grid[y][x].walls.items():
-		if walled:
-			actions.pop(side)
-	return actions
-
-# Returns the possible actions-Q-value pairs for a given state
-# (average of double Q-values)
-def possibleAverageActions(maze, x, y):
-	actionsA = maze.QValues[0][y][x]
-	actionsB = maze.QValues[1][y][x]
-	averageActions = {}
-	for side, walled in maze.grid[y][x].walls.items():
-		if not walled:
-			average = (actionsA[side] + actionsB[side]) / 2
-			averageActions[side] = average
-	return averageActions
+# Double Q-learning algorithm
+def DoubleQLearning(maze, parameters):
+	# Parameters
+	size = maze.size
+	alpha = parameters["alpha"]
+	gamma = parameters["gamma"]
+	epsilon = parameters["epsilon"]
+	initValue = parameters["initValue"]
+	finalEpoch = parameters["finalEpoch"]
 	
+	# Starting point
+	x = parameters["xStart"]
+	y = parameters["yStart"]
+	
+	# Initialize double Q-values
+	maze.initDoubleQValues(initValue)
+	
+	count = 0
+	goalReached = False
+	sys.stdout.write("--------\nDouble Q-learning\n--------\n")
+	while True:
+		count += 1
+		sys.stdout.write("\rState: %i" % count)
+		
+		# Goal state is reached
+		if x == size - 1 and y == size - 1 and not goalReached:
+			goalReached = True
+			sys.stdout.write("\nGoal state reached\n")
+		# Learning takes too long
+		if count == finalEpoch:
+			sys.stdout.write(" (final epoch reached)\n")
+			break
+		
+		# Determine the next action
+		nextAction = epsilonGreedy(epsilon, averageActions(maze, x, y))
+		
+		# Update the Q-value for the current state-action pair
+		updateDoubleQValue(maze, x, y, alpha, gamma, nextAction)
+		
+		# Go to the next state
+		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
+			y -= 1
+		if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
+			x += 1
+		if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
+			y += 1
+		if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
+			x -= 1
+
+# Returns the average Q-value over the double Q-values
+# (both corresponding to a given state)
 def averageActions(maze, x, y):
 	actionsA = maze.QValues[0][y][x]
 	actionsB = maze.QValues[1][y][x]
@@ -75,53 +105,3 @@ def printDoubleQTable(maze):
 			sys.stdout.write("%.2f\t" % maze.QValues[1][y][x]["east"])
 			sys.stdout.write("%.2f\t" % maze.QValues[1][y][x]["south"])
 			sys.stdout.write("%.2f\t\n" % maze.QValues[1][y][x]["west"])
-
-# Double Q-learning algorithm
-def DoubleQLearning(maze):
-	# Parameters
-	param = parameters()
-	size = maze.size
-	alpha = param["alpha"]
-	gamma = param["gamma"]
-	epsilon = param["epsilon"]
-	initValue = param["initValue"]
-	finalEpoch = param["finalEpoch"]
-	
-	# Starting point
-	x = param["xStart"]
-	y = param["yStart"]
-	
-	# Initialize double Q-values
-	maze.initDoubleQValues(initValue)
-	
-	count = 0
-	goalReached = False
-	sys.stdout.write("--------\nDouble Q-learning\n--------\n")
-	while True:
-		count += 1
-		sys.stdout.write("\rState: %i" % count)
-		
-		# Goal state is reached
-		if x == size - 1 and y == size - 1 and not goalReached:
-			goalReached = True
-			sys.stdout.write("\nGoal state reached\n")
-		# Learning takes too long
-		if count == finalEpoch:
-			sys.stdout.write(" (final epoch reached)\n")
-			break
-		
-		# Determine the next action
-		nextAction = epsilonGreedy(epsilon, averageActions(maze, x, y))
-		
-		# Update the Q-value for the current state-action pair
-		updateDoubleQValue(maze, x, y, alpha, gamma, nextAction)
-		
-		# Go to the next state
-		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
-			y -= 1
-		if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
-			x += 1
-		if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
-			y += 1
-		if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
-			x -= 1

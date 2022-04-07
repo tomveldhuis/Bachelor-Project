@@ -1,65 +1,19 @@
 import sys
 from QLearning_Meta import *
 
-# Returns the possible actions-Q-value pairs for a given state
-def possibleActions(maze, x, y):
-	actions = maze.QValues[y][x].copy()
-	for side, walled in maze.grid[y][x].walls.items():
-		if walled:
-			actions.pop(side)
-	return actions
-
-# Updates a Q-value for a given state-action pair
-def updateQValue(maze, x, y, alpha, gamma, nextAction):
-	# Determine future state
-	futureX = x
-	futureY = y
-	if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
-		futureY -= 1
-	if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
-		futureX += 1
-	if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
-		futureY += 1
-	if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
-		futureX -= 1
-		
-	# Determine optimal action for future state
-	optimalFutureAction = maxAction(maze.QValues[futureY][futureX])
-	
-	# Determine TD (temporal difference) value
-	TD = reward(maze, x, y, nextAction)
-	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
-	TD -= maze.QValues[y][x][nextAction]
-	
-	# Update current Q-value
-	maze.QValues[y][x][nextAction] += alpha * TD
-
-# Prints the Q-table
-def printQTable(maze):
-	sys.stdout.write("        ------------Q-values------------\n")
-	sys.stdout.write("\tnorth\teast\tsouth\twest\n");
-	for y in range(maze.size):
-		for x in range(maze.size):
-			sys.stdout.write("(%i, %i)\t" % (x, y))
-			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["north"])
-			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["east"])
-			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["south"])
-			sys.stdout.write("%.2f\n" % maze.QValues[y][x]["west"])
-
-# Q-learning algorithm
-def QLearning(maze):
+# (Normal) Q-learning algorithm
+def NormalQLearning(maze, parameters):
 	# Parameters
-	param = parameters()
 	size = maze.size
-	alpha = param["alpha"]
-	gamma = param["gamma"]
-	epsilon = param["epsilon"]
-	initValue = param["initValue"]
-	finalEpoch = param["finalEpoch"]
+	alpha = parameters["alpha"]
+	gamma = parameters["gamma"]
+	epsilon = parameters["epsilon"]
+	initValue = parameters["initValue"]
+	finalEpoch = parameters["finalEpoch"]
 	
 	# Starting point
-	x = param["xStart"]
-	y = param["yStart"]
+	x = parameters["xStart"]
+	y = parameters["yStart"]
 	
 	# Initialize Q-values
 	maze.initQValues(initValue)
@@ -95,3 +49,40 @@ def QLearning(maze):
 			y += 1
 		if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
 			x -= 1
+
+# Updates a Q-value for a given state-action pair
+def updateQValue(maze, x, y, alpha, gamma, nextAction):
+	# Determine future state
+	futureX = x
+	futureY = y
+	if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
+		futureY -= 1
+	if nextAction == "east" and not maze.grid[y][x].walls[nextAction]:
+		futureX += 1
+	if nextAction == "south" and not maze.grid[y][x].walls[nextAction]:
+		futureY += 1
+	if nextAction == "west" and not maze.grid[y][x].walls[nextAction]:
+		futureX -= 1
+		
+	# Determine optimal action for future state
+	optimalFutureAction = maxAction(maze.QValues[futureY][futureX])
+	
+	# Determine TD (temporal difference) value
+	TD = reward(maze, x, y, nextAction)
+	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
+	TD -= maze.QValues[y][x][nextAction]
+	
+	# Update current Q-value
+	maze.QValues[y][x][nextAction] += alpha * TD
+
+# Prints the Q-table
+def printNormalQTable(maze):
+	sys.stdout.write("        ------------Q-values------------\n")
+	sys.stdout.write("\tnorth\teast\tsouth\twest\n");
+	for y in range(maze.size):
+		for x in range(maze.size):
+			sys.stdout.write("(%i, %i)\t" % (x, y))
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["north"])
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["east"])
+			sys.stdout.write("%.2f\t" % maze.QValues[y][x]["south"])
+			sys.stdout.write("%.2f\n" % maze.QValues[y][x]["west"])

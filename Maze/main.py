@@ -1,16 +1,15 @@
 from Maze import *
-from QLearning import *
-from DoubleQLearning import *
+from QLearning_Form import *
 
 def test():
 	size = 4
 	initValue = 0
 	maze = Maze(size)
 	print(maze.asciiForm)
-	# QLearning(maze)
-	# printQTable(maze)
-	DoubleQLearning(maze)
-	printDoubleQTable(maze)
+	
+	form = "double"
+	QLearning(maze, form)
+	printQTable(maze, form)
 
 def main():
 	test()
