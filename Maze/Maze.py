@@ -91,4 +91,12 @@ class Maze:
 		QValues.append(self.newQValues(initValue))
 		QValues.append(self.newQValues(initValue))
 		self.QValues = QValues
+	
+	# Initialize list of rewards (for experiments)
+	def initRewards(self):
+		self.rewards = []
+	
+	# Initialize list of max Q-values of starting state (for experiments)
+	def initMaxQStart(self):
+		self.maxQStart = []
 		

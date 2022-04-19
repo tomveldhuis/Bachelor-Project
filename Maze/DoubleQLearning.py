@@ -2,36 +2,40 @@ import sys
 from QLearning_Meta import *
 
 # Double Q-learning algorithm
-def DoubleQLearning(maze, parameters):
+def DoubleQLearning(maze, parameters, verbose):
 	# Parameters
 	size = maze.size
 	alpha = parameters["alpha"]
 	gamma = parameters["gamma"]
 	epsilon = parameters["epsilon"]
-	initValue = parameters["initValue"]
 	finalEpoch = parameters["finalEpoch"]
 	
 	# Starting point
 	x = parameters["xStart"]
 	y = parameters["yStart"]
 	
-	# Initialize double Q-values
-	maze.initDoubleQValues(initValue)
+	if verbose:
+		sys.stdout.write("--------\nDouble Q-learning\n--------\n")
+	
+	# Initalize experimental data
+	maze.initRewards()
 	
 	count = 0
 	goalReached = False
-	sys.stdout.write("--------\nDouble Q-learning\n--------\n")
 	while True:
 		count += 1
-		sys.stdout.write("\rState: %i" % count)
+		if verbose:
+			sys.stdout.write("\rState: %i" % count)
 		
 		# Goal state is reached
 		if x == size - 1 and y == size - 1 and not goalReached:
 			goalReached = True
-			sys.stdout.write("\nGoal state reached\n")
+			if verbose:
+				sys.stdout.write("\nGoal state reached\n")
 		# Learning takes too long
 		if count == finalEpoch:
-			sys.stdout.write(" (final epoch reached)\n")
+			if verbose:
+				sys.stdout.write(" (final epoch reached)\n")
 			break
 		
 		# Determine the next action
@@ -39,6 +43,12 @@ def DoubleQLearning(maze, parameters):
 		
 		# Update the Q-value for the current state-action pair
 		updateDoubleQValue(maze, x, y, alpha, gamma, nextAction)
+		
+		# Updating experimental data
+		# - Average reward per time step
+		maze.rewards.append(reward(maze, x, y, nextAction))
+		# - Max Q-value of the starting state
+		maze.maxQStart.append(averageActions(maze, 0, 0)[maxAction(averageActions(maze, 0, 0))])
 		
 		# Go to the next state
 		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:

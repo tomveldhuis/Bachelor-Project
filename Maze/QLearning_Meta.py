@@ -1,25 +1,6 @@
 from Maze import *
 from random import random, choice
 
-# Create a dictionary containing the used parameters
-def parameters():
-	dict = {
-	# Learning rate
-	"alpha": 0.1,
-	# Discount factor
-	"gamma": 0.9,
-	# Epsilon (for epsilon-greedy exploration)
-	"epsilon": 0.25,
-	# Initial Q-value
-	"initValue": 0,
-	# Final epoch at which the Q-learning stops
-	"finalEpoch": 100000,
-	# Starting point
-	"xStart": 0,
-	"yStart": 0
-	}
-	return dict
-
 # Returns the reward from a given state
 def reward(maze, x, y, action):
 	# Enter the goal state from the west (if possible)
