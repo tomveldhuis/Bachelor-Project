@@ -2,7 +2,8 @@ from Maze import *
 from QLearning_Form import *
 
 def test():
-	experiment(parameters())
+	maze = Maze(50)
+	print(maze.asciiForm)
 
 def main():
 	test()

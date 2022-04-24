@@ -6,3 +6,9 @@ class Cell:
 		"south": bool(south),
 		"west": bool(west)
 		}
+		self.explored = False
+		self.pathLength = 0
+	
+	def setCoordinates(self, x, y):
+		self.x = x
+		self.y = y

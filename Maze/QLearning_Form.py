@@ -18,7 +18,7 @@ def parameters():
 	# Initial Q-value
 	"initValue": 0,
 	# Final epoch at which the Q-learning stops
-	"finalEpoch": 10000,
+	"finalEpoch": 1000,
 	# Starting point
 	"xStart": 0,
 	"yStart": 0
@@ -27,25 +27,23 @@ def parameters():
 
 # Perform an experiment in order to collect data
 def experiment(parameters):
-	size = 10
-	n = 100
-	nMazes = 3
+	size = 6
+	n = 1000
+	nMazes = 1
 	
+	# Initialize results
 	results = {}
 	results["normal"] = {}
 	results["double"] = {}
-	results["normal"]["reward"] = []
-	results["normal"]["maxQStart"] = []
-	results["double"]["reward"] = []
-	results["double"]["maxQStart"] = []
 	
+	xPoints = np.array(range(1, parameters["finalEpoch"]))
 	
 	sys.stdout.write("Running through the experiments...\n")
 	for x in range(nMazes):
-		normalReward = []
-		normalMaxQ = []
-		doubleReward = []
-		doubleMaxQ = []
+		results["normal"]["reward"] = []
+		results["normal"]["maxQStart"] = []
+		results["double"]["reward"] = []
+		results["double"]["maxQStart"] = []
 		
 		maze = Maze(size)
 		sys.stdout.write("Randomly generated maze: %i (out of %i)\n" % (x+1, nMazes))
@@ -56,68 +54,49 @@ def experiment(parameters):
 			QLearning(maze, "normal")
 			if i == 0:
 				for j in range(parameters["finalEpoch"] - 1):
-					normalReward.append(maze.rewards[j])
-					normalMaxQ.append(maze.maxQStart[j])
+					results["normal"]["reward"].append(maze.rewards[j])
+					results["normal"]["maxQStart"].append(maze.maxQStart[j])
 			else:
 				for j in range(parameters["finalEpoch"] - 1):
-					normalReward[j] += maze.rewards[j]
-					normalMaxQ[j] += maze.maxQStart[j]
+					results["normal"]["reward"][j] += maze.rewards[j]
+					results["normal"]["maxQStart"][j] += maze.maxQStart[j]
 			
 			# Double Q-learning
 			QLearning(maze, "double")
 			if i == 0:
 				for j in range(parameters["finalEpoch"] - 1):
-					doubleReward.append(maze.rewards[j])
-					doubleMaxQ.append(maze.maxQStart[j])
+					results["double"]["reward"].append(maze.rewards[j])
+					results["double"]["maxQStart"].append(maze.maxQStart[j])
 			else:
 				for j in range(parameters["finalEpoch"] - 1):
-					doubleReward[j] += maze.rewards[j]
-					doubleMaxQ[j] += maze.maxQStart[j]
+					results["double"]["reward"][j] += maze.rewards[j]
+					results["double"]["maxQStart"][j] += maze.maxQStart[j]
 
-		# Average the data and add it to the total results
+		# Average the data
 		sys.stdout.write("\nAveraging the collected data...\n")
 		for i in range(parameters["finalEpoch"] - 1):
-			normalReward[i] /= n
-			normalMaxQ[i] /= n
-			doubleReward[i] /= n
-			doubleMaxQ[i] /= n
-			
-			if x == 0:
-				results["normal"]["reward"].append(normalReward[i])
-				results["normal"]["maxQStart"].append(normalMaxQ[i])
-				results["double"]["reward"].append(doubleReward[i])
-				results["double"]["maxQStart"].append(doubleMaxQ[i])
-			else:
-				results["normal"]["reward"][i] += normalReward[i]
-				results["normal"]["maxQStart"][i] += normalMaxQ[i]
-				results["double"]["reward"][i] += doubleReward[i]
-				results["double"]["maxQStart"][i] += doubleMaxQ[i]
-	
-	# Average total results
-	sys.stdout.write("Getting the total results...\n")
-	for i in range(parameters["finalEpoch"] - 1):
-		results["normal"]["reward"][i] /= nMazes
-		results["normal"]["maxQStart"][i] /= nMazes
-		results["double"]["reward"][i] /= nMazes
-		results["double"]["maxQStart"][i] /= nMazes
+			results["normal"]["reward"][i] /= n
+			results["normal"]["maxQStart"][i] /= n
+			results["double"]["reward"][i] /= n
+			results["double"]["maxQStart"][i] /= n
+		
+		# Create plot data
+		plt.figure()
+		plt.plot(xPoints, results["normal"]["reward"], "r")
+		plt.plot(xPoints, results["double"]["reward"], "b")
+		plt.title("Maze: " + str(x+1) + "\nn = " + str(n) + ", finalEpoch = " + str(parameters["finalEpoch"]))
+		plt.xlabel("Time steps")
+		plt.ylabel("Average reward per time step")
+		
+		plt.figure()
+		plt.plot(xPoints, results["normal"]["maxQStart"], "r")
+		plt.plot(xPoints, results["double"]["maxQStart"], "b")
+		plt.title("Maze: " + str(x+1) + "\nn = " + str(n) + ", finalEpoch = " + str(parameters["finalEpoch"]))
+		plt.xlabel("Time steps")
+		plt.ylabel("max Q(S,a)")
 	
 	# Plot the data
 	sys.stdout.write("Printing the plots...\n")
-	xPoints = np.array(range(1, parameters["finalEpoch"]))
-	
-	plt.plot(xPoints, results["normal"]["reward"], "r")
-	plt.plot(xPoints, results["double"]["reward"], "b")
-	plt.title("n = " + str(n) + ", nMazes = " + str(nMazes) + ", finalEpoch = " + str(parameters["finalEpoch"]))
-	plt.xlabel("Time steps")
-	plt.ylabel("Average reward per time step")
-	plt.figure()
-	
-	plt.plot(xPoints, results["normal"]["maxQStart"], "r")
-	plt.plot(xPoints, results["double"]["maxQStart"], "b")
-	plt.title("n = " + str(n) + ", nMazes = " + str(nMazes) + ", finalEpoch = " + str(parameters["finalEpoch"]))
-	plt.xlabel("Time steps")
-	plt.ylabel("max Q(S,a)")
-	
 	plt.show()
 
 def QLearning(maze, form = "normal", newQTable = True, verbose = False):

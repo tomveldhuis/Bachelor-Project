@@ -7,6 +7,7 @@ class Maze:
 		self.size = int(size)
 		self.asciiForm = self.makeRandomMaze(self.size, self.size)
 		self.grid = self.convertToGrid(self.asciiForm)
+		self.shortestPathLength = self.determineShortestPathLength()
 	
 	# Generates a random ASCII maze
 	def makeRandomMaze(self, w, h):
@@ -42,6 +43,7 @@ class Maze:
 			start = y * width + y
 			end = (y + 1) * width + y
 			gridList.append(asciiForm[start:end])
+		
 		# Create a grid
 		grid = []
 		for y in range(width):
@@ -63,7 +65,46 @@ class Maze:
 							west = True
 						line.append(Cell(north, east, south, west))
 				grid.append(line)
+		
+		for y in range(len(grid)):
+			for x in range(len(grid[y])):
+				grid[y][x].setCoordinates(x, y)
+		
 		return grid
+	
+	# Determines length of the shortest path
+	def determineShortestPathLength(self):
+		queue = []
+		self.grid[0][0].explored = True
+		queue.append(self.grid[0][0])
+		
+		while len(queue) != 0:
+			# Check
+			cell = queue.pop(0)
+			#print(str(cell.x) + " " + str(cell.y))
+			if cell.x == self.size - 1 and cell.y == self.size - 1:
+				return cell.pathLength
+				
+			# Search
+			actions = [x for x, y in cell.walls.items() if y == False]
+			#print(actions)
+			for side in actions:
+				x = cell.x
+				y = cell.y
+				if side == "north":
+					y -= 1
+				if side == "east":
+					x += 1
+				if side == "south":
+					y += 1
+				if side == "west":
+					x -= 1
+				
+				if not self.grid[y][x].explored:
+					self.grid[y][x].explored = True
+					self.grid[y][x].pathLength = cell.pathLength + 1
+					queue.append(self.grid[y][x])
+			
 	
 	# Creates a new grid of Q-values for the maze
 	def newQValues(self, initValue):

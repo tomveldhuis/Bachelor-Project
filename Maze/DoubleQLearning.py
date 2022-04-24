@@ -48,7 +48,7 @@ def DoubleQLearning(maze, parameters, verbose):
 		# - Average reward per time step
 		maze.rewards.append(reward(maze, x, y, nextAction))
 		# - Max Q-value of the starting state
-		maze.maxQStart.append(averageActions(maze, 0, 0)[maxAction(averageActions(maze, 0, 0))])
+		maze.maxQStart.append(averageActions(maze, maze.size - 2, maze.size - 1)[maxAction(averageActions(maze, maze.size - 2, maze.size - 1))])
 		
 		# Go to the next state
 		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:

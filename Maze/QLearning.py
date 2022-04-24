@@ -49,7 +49,7 @@ def NormalQLearning(maze, parameters, verbose):
 		# - Average reward per time step
 		maze.rewards.append(reward(maze, x, y, nextAction))
 		# - Max Q-value of the starting state
-		maze.maxQStart.append(maze.QValues[0][0][maxAction(maze.QValues[0][0])])
+		maze.maxQStart.append(maze.QValues[maze.size - 2][maze.size - 1][maxAction(maze.QValues[maze.size - 2][maze.size - 1])])
 		
 		# Go to the next state
 		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
