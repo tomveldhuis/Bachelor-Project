@@ -1,4 +1,5 @@
 from Cell import *
+from NeuralNetwork import *
 from random import shuffle, randrange
 
 class Maze:
@@ -106,6 +107,8 @@ class Maze:
 					queue.append(self.grid[y][x])
 			
 	
+	#---------------- Q-learning ----------------------
+	
 	# Creates a new grid of Q-values for the maze
 	def newQValues(self, initValue):
 		dict = {
@@ -132,6 +135,12 @@ class Maze:
 		QValues.append(self.newQValues(initValue))
 		QValues.append(self.newQValues(initValue))
 		self.QValues = QValues
+	
+	# 
+	def initNeuralNetwork(self, initValue):
+		self.neuralNetwork = NeuralNetwork(self.size)
+	
+	#----------------- Experimental data -----------------
 	
 	# Initialize list of rewards (for experiments)
 	def initRewards(self):

@@ -3,6 +3,9 @@ from random import random, choice
 
 # Returns the reward from a given state
 def reward(maze, x, y, action):
+	# ---For grid world experiments---
+	#return rewardGridWorld(maze, x, y, action)
+	
 	# Enter the goal state from the west (if possible)
 	if x == maze.size - 2 and y == maze.size - 1:
 		if action == "east" and not maze.grid[y][x].walls[action]:
@@ -34,3 +37,8 @@ def epsilonGreedy(epsilon, actions):
 		return maxAction(actions)
 	# Explorative action
 	return choice([side for side, value in actions.items()])
+
+def rewardGridWorld(maze, x, y, action):
+	if x == maze.size - 1 and y == maze.size - 1:
+		return 5
+	return choice([-12, 10])

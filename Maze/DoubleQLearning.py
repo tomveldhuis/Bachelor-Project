@@ -17,7 +17,7 @@ def DoubleQLearning(maze, parameters, verbose):
 	if verbose:
 		sys.stdout.write("--------\nDouble Q-learning\n--------\n")
 	
-	# Initalize experimental data
+	# Initialize experimental data
 	maze.initRewards()
 	
 	count = 0
@@ -42,7 +42,7 @@ def DoubleQLearning(maze, parameters, verbose):
 		nextAction = epsilonGreedy(epsilon, averageActions(maze, x, y))
 		
 		# Update the Q-value for the current state-action pair
-		updateDoubleQValue(maze, x, y, alpha, gamma, nextAction)
+		updateDoubleQValue(maze, x, y, alpha, count, gamma, nextAction)
 		
 		# Updating experimental data
 		# - Average reward per time step
@@ -73,7 +73,7 @@ def averageActions(maze, x, y):
 	
 # Updates a Q-value for a given state-action pair
 # (random choice between double Q-values)
-def updateDoubleQValue(maze, x, y, alpha, gamma, nextAction):
+def updateDoubleQValue(maze, x, y, alpha, count, gamma, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
@@ -97,8 +97,14 @@ def updateDoubleQValue(maze, x, y, alpha, gamma, nextAction):
 	TD += gamma * maze.QValues[1 - choiceQ][futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[choiceQ][y][x][nextAction]
 	
+	# Determine learning factor
+	if alpha == "linear":
+		learningFactor = 1 / count
+	else:
+		learningFactor = alpha
+	
 	# Update current Q-value
-	maze.QValues[choiceQ][y][x][nextAction] += alpha * TD
+	maze.QValues[choiceQ][y][x][nextAction] += learningFactor * TD
 
 # Prints the double Q-table
 def printDoubleQTable(maze):

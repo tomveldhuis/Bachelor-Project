@@ -5,10 +5,7 @@ from QLearning_Meta import *
 def NormalQLearning(maze, parameters, verbose):
 	# Parameters
 	size = maze.size
-	alpha = parameters["alpha"]
-	gamma = parameters["gamma"]
 	epsilon = parameters["epsilon"]
-	finalEpoch = parameters["finalEpoch"]
 	
 	# Starting point
 	x = parameters["xStart"]
@@ -34,7 +31,7 @@ def NormalQLearning(maze, parameters, verbose):
 			if verbose:
 				sys.stdout.write("\nGoal state reached\n")
 		# Learning takes too long
-		if count == finalEpoch:
+		if count == parameters["finalEpoch"]:
 			if verbose:
 				sys.stdout.write(" (final epoch reached)\n")
 			break
@@ -43,13 +40,13 @@ def NormalQLearning(maze, parameters, verbose):
 		nextAction = epsilonGreedy(epsilon, maze.QValues[y][x])
 		
 		# Update the Q-value for the current state-action pair
-		updateQValue(maze, x, y, alpha, gamma, nextAction)
+		updateQValue(maze, x, y, parameters, count, nextAction)
 		
 		# Updating experimental data
 		# - Average reward per time step
 		maze.rewards.append(reward(maze, x, y, nextAction))
 		# - Max Q-value of the starting state
-		maze.maxQStart.append(maze.QValues[maze.size - 2][maze.size - 1][maxAction(maze.QValues[maze.size - 2][maze.size - 1])])
+		#maze.maxQStart.append(maze.QValues[maze.size - 2][maze.size - 1][maxAction(maze.QValues[maze.size - 2][maze.size - 1])])
 		
 		# Go to the next state
 		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
@@ -62,7 +59,7 @@ def NormalQLearning(maze, parameters, verbose):
 			x -= 1
 
 # Updates a Q-value for a given state-action pair
-def updateQValue(maze, x, y, alpha, gamma, nextAction):
+def updateQValue(maze, x, y, parameters, count, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
@@ -80,11 +77,17 @@ def updateQValue(maze, x, y, alpha, gamma, nextAction):
 	
 	# Determine TD (temporal difference) value
 	TD = reward(maze, x, y, nextAction)
-	TD += gamma * maze.QValues[futureY][futureX][optimalFutureAction]
+	TD += parameters["gamma"] * maze.QValues[futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[y][x][nextAction]
 	
+	# Determine learning factor
+	if parameters["alpha"] == "linear":
+		learningFactor = 1 / count
+	else:
+		learningFactor = parameters["alpha"]
+	
 	# Update current Q-value
-	maze.QValues[y][x][nextAction] += alpha * TD
+	maze.QValues[y][x][nextAction] += learningFactor * TD
 
 # Prints the Q-table
 def printNormalQTable(maze):
