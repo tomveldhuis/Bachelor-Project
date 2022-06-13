@@ -3,58 +3,37 @@ from keras.layers import Dense, Input
 import numpy as np
 import os
 
+from random import random
+
 class NeuralNetwork:
 	# Constructor
 	def __init__(self, size):
 		self.model = self.createNetwork(size)
 	
 	def createNetwork(self, size):
-		inputs = Input(shape=(2,), name="input")
-		hidden = Dense(10, activation='relu', name="hidden")(inputs)
-		outputs = Dense(4, activation='relu', name="output")(hidden)
+		inputs = Input(shape=(2,), name="inputs")
+		hidden = Dense(size, activation="relu", name="hidden")(inputs)
+		outputs = Dense(4, activation="relu", name="outputs")(hidden)
 		
-		out1 = Dense(1, activation = "linear", name = "out1")(hidden)
-		out2 = Dense(1, activation = "linear", name = "out2")(hidden)
-		out3 = Dense(1, activation = "linear", name = "out3")(hidden)
-		out4 = Dense(1, activation = "linear", name = "out4")(hidden)
-		
-		model = Model(inputs=inputs, outputs=outputs, name="NeuralTable")
-		model.compile(loss = 'mean_squared_error', optimizer = 'sgd')
-		print(model.summary())
+		model = Model(inputs=inputs, outputs=outputs, name="QTable")
+		model.compile(loss="mse", optimizer="sgd")
 		return model
 	
 	def predict(self, x, y):
-		data = self.model.predict([(x, y)])[0]
-		dict = {
-		"north": data[0],
-		"east": data[1],
-		"south": data[2],
-		"west": data[3]
-		}
-		return dict
-	
-	def update(self, x, y, action, value):
-		# Determine weights
-		weights = {0:0, 1:0, 2:0, 3:0}
-		if action == "north":
-			weights[0] = 1
-		elif action == "east":
-			weights[1] = 1
-		elif action == "south":
-			weights[2] = 1
-		elif action == "west":
-			weights[3] = 1
-		else:
-			return
+		prediction = self.model.predict([(x, y)])
+		# Choose the prediction based on epsilon greedy
 		
-		print(weights)
-		print(value)
+		# Perform the action from epsilon greedy
 		
-		# Create mapping data
-		input = np.array([[x, y]])
-		target = np.array([[value, value, value, value]])
+		# Get the new state and reward from the environment
 		
-		self.model.fit(input, target, class_weight = weights, batch_size = 32, epochs = 1)
+		# Get the prediction for the new state and take the maximum
+		
+		# Calculate the target value
+		
+		model.fit((x, y), targetValue)
+		return prediction[0]
+		
 		
 		
 	

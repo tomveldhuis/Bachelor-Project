@@ -1,10 +1,12 @@
-maze size: 6
 n: 1000
-nMazes: 1
+nMazes: 9
 alpha: linear
 gamma: 0.95
 epsilon: 0.25
 initValue: 0
-finalEpoch: 1000
+finalEpoch: 10000
 xStart: 0
 yStart: 0
+QForm: QTable
+TDForm: lambda
+lambda: 0.5

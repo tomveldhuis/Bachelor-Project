@@ -3,6 +3,8 @@ from QLearning import NormalQLearning, printNormalQTable
 from DoubleQLearning import DoubleQLearning, printDoubleQTable
 
 from pathlib import Path
+from math import pow
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -28,15 +30,35 @@ def parameters():
 	# Use of a Q-table or neural network
 	# - "QTable": a Q-table
 	# - "neuralNetwork": a neural network
-	"QForm": "neuralNetwork"
+	"QForm": "QTable",
+	# Type of TD algorithm used
+	# - "target"
+	# - "lambda"
+	"TDForm": "lambda",
+	# Lambda (for TD-lambda)
+	"lambda": 0.5
 	}
 	return dict
 
+def standardMazes():
+	# Initialize array of mazes
+	mazes = []
+	random.seed(6122015)
+	for i in range(3):
+		mazes.append(Maze(5))
+	for i in range(3):
+		mazes.append(Maze(10))
+	for i in range(3):
+		mazes.append(Maze(20))
+	
+	# Reset the random seed
+	random.seed()
+	return mazes
+
 # Perform an experiment in order to collect data
-def experiment(parameters):
-	size = 6
+def experiment(parameters, mazes):
 	n = 1000
-	nMazes = 1
+	nMazes = len(mazes)
 	
 	# Initialize results
 	results = {}
@@ -47,7 +69,6 @@ def experiment(parameters):
 	
 	Path("results").mkdir(parents=True, exist_ok=True)
 	f = open("results/parameters.txt", "w")
-	f.write("maze size: " + str(size) + "\n")
 	f.write("n: " + str(n) + "\n")
 	f.write("nMazes: " + str(nMazes) + "\n")
 	for x, y in parameters.items():
@@ -61,7 +82,7 @@ def experiment(parameters):
 		results["double"]["reward"] = []
 		results["double"]["maxQStart"] = []
 		
-		maze = Maze(size)
+		maze = mazes[x]
 		sys.stdout.write("Randomly generated maze: %i (out of %i)\n" % (x+1, nMazes))
 		for i in range(n):
 			sys.stdout.write("\rExperiment: %i (out of %i)" % (i+1, n))
@@ -103,21 +124,38 @@ def experiment(parameters):
 		f.write(maze.asciiForm)
 		f.close()
 		
+		# Create plot data
+		f1 = open("results/reward_normal_" + str(x+1) + ".txt", "w")
+		f2 = open("results/reward_double_" + str(x+1) + ".txt", "w")
+		f3 = open("results/maxQStart_normal_" + str(x+1) + ".txt", "w")
+		f4 = open("results/maxQStart_double_" + str(x+1) + ".txt", "w")
+		for i in range(len(results["normal"]["reward"])):
+			f1.write(str(results["normal"]["reward"][i]) + "\n")
+			f2.write(str(results["double"]["reward"][i]) + "\n")
+			f3.write(str(results["normal"]["maxQStart"][i]) + "\n")
+			f4.write(str(results["double"]["maxQStart"][i]) + "\n")
+		f1.close()
+		f2.close()
+		f3.close()
+		f4.close()
+		
 		# Create plot files
 		plt.figure()
-		plt.plot(xPoints, results["normal"]["reward"], "r")
-		plt.plot(xPoints, results["double"]["reward"], "b")
+		plt.plot(xPoints, results["normal"]["reward"], "r", label="Q-learning")
+		plt.plot(xPoints, results["double"]["reward"], "b", label="Double Q-learning")
 		plt.title("Maze: " + str(x+1) + "\nn = " + str(n) + ", finalEpoch = " + str(parameters["finalEpoch"]))
 		plt.xlabel("Time steps")
 		plt.ylabel("Average reward per time step")
+		plt.legend(loc = "lower right")
 		plt.savefig("results/reward_" + str(x+1) + ".png")
 		
 		plt.figure()
-		plt.plot(xPoints, results["normal"]["maxQStart"], "r")
-		plt.plot(xPoints, results["double"]["maxQStart"], "b")
+		plt.plot(xPoints, results["normal"]["maxQStart"], "r", label="Q-learning")
+		plt.plot(xPoints, results["double"]["maxQStart"], "b", label="Double Q-learning")
 		plt.title("Maze: " + str(x+1) + "\nn = " + str(n) + ", finalEpoch = " + str(parameters["finalEpoch"]))
 		plt.xlabel("Time steps")
 		plt.ylabel("max Q(S,a)")
+		plt.legend(loc = "lower right")
 		plt.savefig("results/maxQStart_" + str(x+1) + ".png")
 		
 

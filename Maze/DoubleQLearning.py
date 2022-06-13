@@ -24,6 +24,8 @@ def DoubleQLearning(maze, parameters, verbose):
 	goalReached = False
 	while True:
 		count += 1
+		maze.grid[y][x].timesVisited += 1
+		
 		if verbose:
 			sys.stdout.write("\rState: %i" % count)
 		
@@ -39,10 +41,14 @@ def DoubleQLearning(maze, parameters, verbose):
 			break
 		
 		# Determine the next action
-		nextAction = epsilonGreedy(epsilon, averageActions(maze, x, y))
+		nextAction = epsilonGreedyLinear(averageActions(maze, x, y), maze.grid[y][x].timesVisited)
 		
 		# Update the Q-value for the current state-action pair
-		updateDoubleQValue(maze, x, y, alpha, count, gamma, nextAction)
+		updateDoubleQValue(maze, x, y, parameters, count, nextAction)
+		
+		# Update eligibility traces
+		if parameters["TDForm"] == "lambda":
+			maze.updateTraces(x, y, parameters["gamma"], parameters["lambda"])
 		
 		# Updating experimental data
 		# - Average reward per time step
@@ -73,7 +79,7 @@ def averageActions(maze, x, y):
 	
 # Updates a Q-value for a given state-action pair
 # (random choice between double Q-values)
-def updateDoubleQValue(maze, x, y, alpha, count, gamma, nextAction):
+def updateDoubleQValue(maze, x, y, parameters, count, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
@@ -94,17 +100,20 @@ def updateDoubleQValue(maze, x, y, alpha, count, gamma, nextAction):
 	
 	# Determine TD (temporal difference) value
 	TD = reward(maze, x, y, nextAction)
-	TD += gamma * maze.QValues[1 - choiceQ][futureY][futureX][optimalFutureAction]
+	TD += parameters["gamma"] * maze.QValues[1 - choiceQ][futureY][futureX][optimalFutureAction]
 	TD -= maze.QValues[choiceQ][y][x][nextAction]
 	
 	# Determine learning factor
-	if alpha == "linear":
+	if parameters["alpha"] == "linear":
 		learningFactor = 1 / count
 	else:
-		learningFactor = alpha
+		learningFactor = parameters["alpha"]
 	
 	# Update current Q-value
-	maze.QValues[choiceQ][y][x][nextAction] += learningFactor * TD
+	TD *= learningFactor
+	if parameters["TDForm"] == "lambda":
+		TD *= maze.grid[y][x].traceValue
+	maze.QValues[choiceQ][y][x][nextAction] += TD
 
 # Prints the double Q-table
 def printDoubleQTable(maze):

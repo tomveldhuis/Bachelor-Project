@@ -1,5 +1,6 @@
 from Maze import *
 from random import random, choice
+from math import sqrt
 
 # Returns the reward from a given state
 def reward(maze, x, y, action):
@@ -32,6 +33,14 @@ def maxAction(actions):
 
 # Returns an action for a given state (epsilon-greedy strategy)
 def epsilonGreedy(epsilon, actions):
+	# Exploitative action
+	if random() > epsilon:
+		return maxAction(actions)
+	# Explorative action
+	return choice([side for side, value in actions.items()])
+
+def epsilonGreedyLinear(actions, timesVisited):
+	epsilon = 1 / sqrt(timesVisited)
 	# Exploitative action
 	if random() > epsilon:
 		return maxAction(actions)

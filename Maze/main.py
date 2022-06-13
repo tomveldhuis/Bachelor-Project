@@ -1,13 +1,9 @@
 from Maze import *
 from QLearning_Form import *
-
-from NeuralNetwork import *
+#from DeepQLearning import *
 
 def test():
-	nn = NeuralNetwork(5)
-	print(nn.predict(0, 0))
-	#nn.update(0, 0, "east", 100)
-	#print(nn.predict(0, 0))
+	experiment(parameters(), standardMazes())
 
 def main():
 	test()

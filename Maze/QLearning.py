@@ -22,6 +22,8 @@ def NormalQLearning(maze, parameters, verbose):
 	goalReached = False
 	while True:
 		count += 1
+		maze.grid[y][x].timesVisited += 1
+		
 		if verbose:
 			sys.stdout.write("\rState: %i" % count)
 		
@@ -37,16 +39,20 @@ def NormalQLearning(maze, parameters, verbose):
 			break
 		
 		# Determine the next action
-		nextAction = epsilonGreedy(epsilon, maze.QValues[y][x])
+		nextAction = epsilonGreedyLinear(maze.QValues[y][x], maze.grid[y][x].timesVisited)
 		
 		# Update the Q-value for the current state-action pair
-		updateQValue(maze, x, y, parameters, count, nextAction)
+		updateQValue(maze, x, y, parameters, nextAction)
+		
+		# Update eligibility traces
+		if parameters["TDForm"] == "lambda":
+			maze.updateTraces(x, y, parameters["gamma"], parameters["lambda"])
 		
 		# Updating experimental data
 		# - Average reward per time step
 		maze.rewards.append(reward(maze, x, y, nextAction))
 		# - Max Q-value of the starting state
-		#maze.maxQStart.append(maze.QValues[maze.size - 2][maze.size - 1][maxAction(maze.QValues[maze.size - 2][maze.size - 1])])
+		maze.maxQStart.append(maze.QValues[maze.size - 2][maze.size - 1][maxAction(maze.QValues[maze.size - 2][maze.size - 1])])
 		
 		# Go to the next state
 		if nextAction == "north" and not maze.grid[y][x].walls[nextAction]:
@@ -59,7 +65,7 @@ def NormalQLearning(maze, parameters, verbose):
 			x -= 1
 
 # Updates a Q-value for a given state-action pair
-def updateQValue(maze, x, y, parameters, count, nextAction):
+def updateQValue(maze, x, y, parameters, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
@@ -82,12 +88,15 @@ def updateQValue(maze, x, y, parameters, count, nextAction):
 	
 	# Determine learning factor
 	if parameters["alpha"] == "linear":
-		learningFactor = 1 / count
+		learningFactor = 1 / maze.grid[y][x].timesVisited
 	else:
 		learningFactor = parameters["alpha"]
 	
 	# Update current Q-value
-	maze.QValues[y][x][nextAction] += learningFactor * TD
+	TD *= learningFactor
+	if parameters["TDForm"] == "lambda":
+		TD *= maze.grid[y][x].traceValue
+	maze.QValues[y][x][nextAction] += TD
 
 # Prints the Q-table
 def printNormalQTable(maze):

@@ -136,6 +136,14 @@ class Maze:
 		QValues.append(self.newQValues(initValue))
 		self.QValues = QValues
 	
+	# Update eligibility traces (TD(lambda) training)
+	def updateTraces(self, visitX, visitY, gamma, Lambda):
+		for y in range(self.size):
+			for x in range(self.size):
+				self.grid[y][x].traceValue *= gamma * Lambda
+				if x == visitX and y == visitY:
+					self.grid[y][x].traceValue += 1
+					
 	# 
 	def initNeuralNetwork(self, initValue):
 		self.neuralNetwork = NeuralNetwork(self.size)
