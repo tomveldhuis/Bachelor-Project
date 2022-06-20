@@ -8,5 +8,5 @@ finalEpoch: 10000
 xStart: 0
 yStart: 0
 QForm: QTable
-TDForm: lambda
+TDForm: target
 lambda: 0.5

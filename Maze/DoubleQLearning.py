@@ -19,6 +19,7 @@ def DoubleQLearning(maze, parameters, verbose):
 	
 	# Initialize experimental data
 	maze.initRewards()
+	maze.initMaxQStart()
 	
 	count = 0
 	goalReached = False
@@ -44,7 +45,7 @@ def DoubleQLearning(maze, parameters, verbose):
 		nextAction = epsilonGreedyLinear(averageActions(maze, x, y), maze.grid[y][x].timesVisited)
 		
 		# Update the Q-value for the current state-action pair
-		updateDoubleQValue(maze, x, y, parameters, count, nextAction)
+		updateDoubleQValue(maze, x, y, parameters, nextAction)
 		
 		# Update eligibility traces
 		if parameters["TDForm"] == "lambda":
@@ -79,7 +80,7 @@ def averageActions(maze, x, y):
 	
 # Updates a Q-value for a given state-action pair
 # (random choice between double Q-values)
-def updateDoubleQValue(maze, x, y, parameters, count, nextAction):
+def updateDoubleQValue(maze, x, y, parameters, nextAction):
 	# Determine future state
 	futureX = x
 	futureY = y
@@ -94,6 +95,10 @@ def updateDoubleQValue(maze, x, y, parameters, count, nextAction):
 	
 	# Determine which Q-value to change
 	choiceQ = choice([0, 1])
+	if choiceQ == 0:
+		maze.grid[y][x].updateA += 1
+	else:
+		maze.grid[y][x].updateB += 1
 	
 	# Determine optimal action for future state
 	optimalFutureAction = maxAction(maze.QValues[choiceQ][futureY][futureX])
@@ -105,7 +110,10 @@ def updateDoubleQValue(maze, x, y, parameters, count, nextAction):
 	
 	# Determine learning factor
 	if parameters["alpha"] == "linear":
-		learningFactor = 1 / count
+		if choiceQ == 0:
+			learningFactor = 1 / maze.grid[y][x].updateA
+		else:
+			learningFactor = 1 / maze.grid[y][x].updateB
 	else:
 		learningFactor = parameters["alpha"]
 	

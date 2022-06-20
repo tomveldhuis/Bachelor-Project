@@ -34,7 +34,7 @@ def parameters():
 	# Type of TD algorithm used
 	# - "target"
 	# - "lambda"
-	"TDForm": "lambda",
+	"TDForm": "target",
 	# Lambda (for TD-lambda)
 	"lambda": 0.5
 	}
@@ -58,7 +58,7 @@ def standardMazes():
 # Perform an experiment in order to collect data
 def experiment(parameters, mazes):
 	n = 1000
-	nMazes = len(mazes)
+	nMazes = len(mazes) 
 	
 	# Initialize results
 	results = {}

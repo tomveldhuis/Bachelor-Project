@@ -19,6 +19,20 @@ class NeuralNetwork:
 		model.compile(loss="mse", optimizer="sgd")
 		return model
 	
+	def getPrediction(self, x, y):
+		prediction = self.model.predict([(x, y)])
+		print(prediction[0])
+		dict = {
+		"north": prediction[0][0],
+		"east": prediction[0][1],
+		"south": prediction[0][2],
+		"west": prediction[0][3]
+		}
+		return dict
+	
+	def fitValue(self, x, y, targetValue):
+		self.model.fit((x, y), targetValue)
+	
 	def predict(self, x, y):
 		prediction = self.model.predict([(x, y)])
 		# Choose the prediction based on epsilon greedy

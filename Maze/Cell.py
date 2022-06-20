@@ -9,6 +9,8 @@ class Cell:
 		# Variables for Q-learning
 		self.traceValue = 0
 		self.timesVisited = 0
+		self.updateA = 0
+		self.updateB = 0
 		# Variables for calculating the shortest path length
 		self.explored = False
 		self.pathLength = 0
